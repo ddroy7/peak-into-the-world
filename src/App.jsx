@@ -1,18 +1,43 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Menu, Home, LogIn, Upload, Trash2, Maximize, PlayCircle, ShieldCheck, X } from "lucide-react";
 
 export default function App() {
   const [page, setPage] = useState("home");
   const [menuOpen, setMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [videos, setVideos] = useState([]);
-  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [selectedVideoId, setSelectedVideoId] = useState(null);
+  const [username, setUsername] = useState("");
+  const [heroLoaded, setHeroLoaded] = useState(false);
+
+  const videoRef = useRef(null);
+
+  const selectedVideo = useMemo(
+    () => videos.find((video) => video.id === selectedVideoId) || null,
+    [videos, selectedVideoId]
+  );
+
+  const closeMenu = () => setMenuOpen(false);
+
+  const goTo = (nextPage) => {
+    setPage(nextPage);
+    closeMenu();
+  };
+
+  const fakeLogin = () => {
+    setIsLoggedIn(true);
+    setPage("admin");
+    closeMenu();
+  };
 
   const handleUpload = (event) => {
     const files = Array.from(event.target.files || []);
+    if (!files.length) return;
 
     const newVideos = files.map((file, index) => ({
       id: `${Date.now()}-${index}`,
       name: file.name,
+      size: file.size,
       url: URL.createObjectURL(file),
     }));
 
@@ -24,9 +49,7 @@ export default function App() {
       return updated;
     });
 
-    if (!selectedVideo && newVideos.length > 0) {
-      setSelectedVideo(newVideos[0]);
-    }
+    event.target.value = "";
   };
 
   const handleDelete = (id) => {
